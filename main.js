@@ -64,18 +64,25 @@ function getSelectedTextLayers() {
     try {
         console.log('开始获取选中图层...');
         
-        // 直接使用 mg.currentPage.selection（这是 MasterGo 的标准 API）
+        // 根据 MasterGo 官方文档，使用 mg.document.currentPage.selection
         let selection = [];
         
         try {
-            // 检查 mg.currentPage 是否存在
-            if (!mg.currentPage) {
-                console.log('mg.currentPage 不存在');
+            // 检查 mg.document 是否存在
+            if (!mg.document) {
+                console.log('mg.document 不存在');
                 return [];
             }
             
-            // 获取选中图层
-            selection = mg.currentPage.selection;
+            // 获取当前页面
+            const currentPage = mg.document.currentPage;
+            if (!currentPage) {
+                console.log('mg.document.currentPage 不存在');
+                return [];
+            }
+            
+            // 获取选中图层（根据官方文档）
+            selection = currentPage.selection;
             
             // 检查 selection 是否为数组
             if (!Array.isArray(selection)) {
