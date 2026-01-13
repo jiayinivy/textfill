@@ -6,23 +6,34 @@ const PROXY_URL = 'https://textfill-ten.vercel.app/api/qwen-proxy';
 
 async function callQwenAPI(description, count) {
     try {
+        console.log('开始调用代理API:', PROXY_URL);
+        console.log('请求参数:', { description, count });
+        
+        const requestBody = {
+            description: description,
+            count: count
+        };
+        
+        console.log('发送请求...');
         const response = await fetch(PROXY_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                description: description,
-                count: count
-            })
+            body: JSON.stringify(requestBody)
         });
         
+        console.log('收到响应:', response.status, response.statusText);
+        
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+            const errorText = await response.text();
+            console.error('API响应错误:', response.status, errorText);
+            const errorData = JSON.parse(errorText).catch(() => ({ error: errorText }));
             throw new Error(errorData.error || `API请求失败: ${response.status}`);
         }
         
         const data = await response.json();
+        console.log('API返回数据:', data);
         
         if (!data.success || !data.texts || !Array.isArray(data.texts)) {
             throw new Error(data.error || 'API返回数据格式错误');
@@ -32,9 +43,11 @@ async function callQwenAPI(description, count) {
             throw new Error(`生成的文本数量不足，需要${count}个，实际生成${data.texts.length}个`);
         }
         
+        console.log('成功获取文本:', data.texts);
         return data.texts;
     } catch (error) {
         console.error('调用代理API失败:', error);
+        console.error('错误详情:', error.message, error.stack);
         throw error;
     }
 }
@@ -107,8 +120,12 @@ mg.ui.onmessage = async (msg) => {
             const count = textLayers.length;
             
             // 2. 调用阿里云千问API生成文本
+            console.log('准备调用API，选中图层数量:', count);
             mg.ui.postMessage({ type: 'loading', message: `正在生成${count}个文本...` });
+            
+            console.log('开始调用 callQwenAPI...');
             const generatedTexts = await callQwenAPI(description, count);
+            console.log('API调用完成，返回文本:', generatedTexts);
             
             // 3. 替换文字图层内容
             for (let i = 0; i < textLayers.length && i < generatedTexts.length; i++) {
