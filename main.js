@@ -1,5 +1,7 @@
 // 用于展示插件用户界面
+console.log('插件初始化开始...');
 mg.showUI(__html__)
+console.log('插件UI已显示');
 
 // 调用Vercel代理API生成文本
 const PROXY_URL = 'https://textfill-ten.vercel.app/api/qwen-proxy';
@@ -103,8 +105,11 @@ function replaceTextLayerContent(layer, text) {
 }
 
 // 接收来自 UI 的消息
+console.log('设置消息监听器...');
 mg.ui.onmessage = async (msg) => {
+    console.log('收到UI消息:', msg);
     if (msg.type === 'submit') {
+        console.log('处理提交请求，描述:', msg.text);
         const description = msg.text;
         
         // 发送加载状态
