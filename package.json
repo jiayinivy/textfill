@@ -2,6 +2,7 @@
   "name": "textfill-proxy",
   "version": "1.0.0",
   "description": "MasterGo文本填充插件 - Vercel代理服务器",
+  "type": "module",
   "main": "api/qwen-proxy.js",
   "scripts": {
     "dev": "vercel dev",
