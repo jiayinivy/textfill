@@ -28,7 +28,12 @@ async function callQwenAPI(description, count) {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API响应错误:', response.status, errorText);
-            const errorData = JSON.parse(errorText).catch(() => ({ error: errorText }));
+            let errorData = {};
+            try {
+                errorData = JSON.parse(errorText);
+            } catch (e) {
+                errorData = { error: errorText };
+            }
             throw new Error(errorData.error || `API请求失败: ${response.status}`);
         }
         
