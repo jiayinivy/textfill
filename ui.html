@@ -139,16 +139,32 @@
             console.log('UI: 请求参数:', { description, count });
             
             console.log('UI: 发送fetch请求...');
-            const response = await fetch(PROXY_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    description: description,
-                    count: count
-                })
-            });
+            
+            // 创建 AbortController 用于超时控制
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
+            
+            let response;
+            try {
+                response = await fetch(PROXY_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: description,
+                        count: count
+                    }),
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+            } catch (fetchError) {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('请求超时，请检查网络连接或稍后重试');
+                }
+                throw fetchError;
+            }
             
             console.log('UI: 收到响应:', response.status, response.statusText);
             console.log('UI: 响应头:', response.headers);
@@ -180,6 +196,9 @@
             return data.texts;
         } catch (error) {
             console.error('UI: 调用代理API失败:', error);
+            if (error.message.includes('Failed to fetch') || error.message.includes('timeout') || error.message.includes('ERR_CONNECTION_TIMED_OUT')) {
+                throw new Error('无法连接到服务器，请检查网络连接或稍后重试。如果问题持续，可能是 Vercel 代理服务器无法访问。');
+            }
             throw error;
         }
     }
