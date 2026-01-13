@@ -2,7 +2,7 @@
 mg.showUI(__html__)
 
 // 调用Vercel代理API生成文本
-const PROXY_URL = 'https://textfill-jane-yes-projects.vercel.app/api/qwen-proxy';
+const PROXY_URL = 'https://textfill-ten.vercel.app/api/qwen-proxy';
 
 async function callQwenAPI(description, count) {
     try {
